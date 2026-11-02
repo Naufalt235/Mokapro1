@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/PublicNavbar/PublicNavbar';
-import roleCashierIcon from '../../assets/role-cashier.png';
-import roleBaristaIcon from '../../assets/role-barista.png';
-import roleAdminIcon from '../../assets/role-admin.png';
 import './SelectUser.css';
 
-// 3 Kartu Utama (Tampilan Statis)
+// 1. IMPORT GAMBAR YANG BENAR (Mencegah Error 404)
+const roleCashierIcon = new URL('../../assets/role-cashier.png', import.meta.url).href;
+const roleBaristaIcon = new URL('../../assets/role-barista.png', import.meta.url).href;
+const roleAdminIcon = new URL('../../assets/role-admin.png', import.meta.url).href;
+
+// 2. 3 KARTU UTAMA
 const MAIN_ROLES = [
   { id: 'cashier', name: 'Kasir', roleTitle: 'Kasir', icon: roleCashierIcon, destination: '/cashier' },
   { id: 'barista', name: 'Barista', roleTitle: 'Barista / Dapur', icon: roleBaristaIcon, destination: '/kds' },
@@ -22,7 +24,6 @@ export default function SelectUser() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  // Fungsi saat kartu utama diklik
   const handleCardClick = (role) => {
     setSelectedRole(role);
     setUsername('');
@@ -30,14 +31,13 @@ export default function SelectUser() {
     setError('');
   };
 
-  // Fungsi validasi Login
   const handleLogin = (e) => {
     e.preventDefault();
     
     // Ambil semua akun dari localStorage
     const savedAccounts = JSON.parse(localStorage.getItem('mokapro_accounts')) || [];
     
-    // Cari akun yang cocok berdasarkan Role ID, Username, dan Password
+    // Cari akun yang cocok
     const matchedAccount = savedAccounts.find(acc => 
       acc.roleId === selectedRole.id && 
       acc.username === username && 
@@ -45,13 +45,9 @@ export default function SelectUser() {
     );
 
     if (matchedAccount) {
-      // SIMPAN DATA USER YANG LOGIN
       localStorage.setItem('mokapro_current_user', JSON.stringify(matchedAccount));
-      
-      // Login Sukses
       navigate(selectedRole.destination);
     } else {
-      // Login Gagal
       setError('Username atau Password salah untuk role ini!');
     }
   };
@@ -77,7 +73,6 @@ export default function SelectUser() {
             <p className="select-user-subtitle">Pilih peran Anda, lalu masukkan Username dan Password.</p>
           </section>
 
-          {/* TAMPILAN 3 KARTU UTAMA */}
           <section className="select-user-grid" aria-label="Daftar peran karyawan">
             {MAIN_ROLES.map((role) => (
               <div key={role.id} className="role-card" onClick={() => handleCardClick(role)}>
@@ -111,23 +106,11 @@ export default function SelectUser() {
             <form onSubmit={handleLogin}>
               <div className="form-group">
                 <label>Username</label>
-                <input 
-                  type="text" 
-                  value={username} 
-                  onChange={(e) => setUsername(e.target.value)} 
-                  placeholder="Masukkan username"
-                  className="modal-input"
-                />
+                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Masukkan username" className="modal-input" />
               </div>
               <div className="form-group">
                 <label>Password</label>
-                <input 
-                  type="password" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  placeholder="Masukkan password"
-                  className="modal-input"
-                />
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Masukkan password" className="modal-input" />
               </div>
               {error && <p className="modal-error">{error}</p>}
               
