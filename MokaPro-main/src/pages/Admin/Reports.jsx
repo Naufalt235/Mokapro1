@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import DashboardNavbar from '../../components/DashboardNavbar/DashboardNavbar';
+import SalesChart from '../../components/SalesChart/SalesChart'; // Import Grafik
 import './Reports.css';
 
 export default function Reports() {
@@ -40,13 +41,16 @@ export default function Reports() {
         <div className="report-content">
           <div className="chart-area">
             <h3>Grafik Tren Penjualan Harian (Jam Sibuk)</h3>
-            <div className="chart-placeholder">[Area Grafik Penjualan]</div>
+            {/* Menggunakan Komponen Grafik */}
+            <div className="chart-box">
+              <SalesChart history={history} />
+            </div>
           </div>
           
           <div className="summary-area">
             <h3>Rekapitulasi Shift Kasir</h3>
             <ul className="summary-list">
-              <li><span>Kasir Bertugas</span> <strong>Kasir 01</strong></li>
+              <li><span>Kasir Bertugas</span> <strong>Semua Kasir</strong></li>
               <li><span>Modal Kas Awal</span> <strong>Rp 500.000</strong></li>
               <li><span>Tunai Masuk</span> <strong className="text-green">Rp {history.filter(h => h.method === 'Tunai').reduce((acc, curr) => acc + curr.total, 0).toLocaleString('id-ID')}</strong></li>
               <li><span>QRIS / Non-Tunai</span> <strong className="text-blue">Rp {history.filter(h => h.method === 'QRIS').reduce((acc, curr) => acc + curr.total, 0).toLocaleString('id-ID')}</strong></li>

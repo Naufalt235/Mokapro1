@@ -1,62 +1,78 @@
 import { useState, useEffect } from 'react';
 import DashboardNavbar from '../../components/DashboardNavbar/DashboardNavbar';
+import SalesChart from '../../components/SalesChart/SalesChart'; // Import Grafik
 import './Shift.css';
 
 export default function Shift() {
   const [history, setHistory] = useState([]);
+  const [currentUser, setCurrentUser] = useState({ name: 'Memuat...', roleTitle: 'Kasir' });
+  const MODAL_AWAL = 500000;
 
-  // Ambil data transaksi asli dari localStorage
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem('mokapro_history')) || [];
     setHistory(savedHistory);
+
+    const savedUser = JSON.parse(localStorage.getItem('mokapro_current_user'));
+    if (savedUser) setCurrentUser(savedUser);
   }, []);
 
-  // 1. Hitung Total Penjualan
   const totalPenjualan = history.reduce((acc, curr) => acc + curr.total, 0);
-
-  // 2. Hitung Total Transaksi
   const totalTransaksi = history.length;
 
-  // 3. Cari Produk Terlaris
   const getProdukTerlaris = () => {
     if (history.length === 0) return { name: '-', qty: 0 };
-    
     const itemCounts = {};
     history.forEach(order => {
       order.items.forEach(item => {
         itemCounts[item.name] = (itemCounts[item.name] || 0) + item.quantity;
       });
     });
-
-    let maxItem = '-';
-    let maxQty = 0;
+    let maxItem = '-'; let maxQty = 0;
     for (const [name, qty] of Object.entries(itemCounts)) {
-      if (qty > maxQty) {
-        maxQty = qty;
-        maxItem = name;
-      }
+      if (qty > maxQty) { maxQty = qty; maxItem = name; }
     }
     return { name: maxItem, qty: maxQty };
   };
 
   const produkTerlaris = getProdukTerlaris();
+  const pendapatanTunai = history.filter(h => h.method === 'Tunai').reduce((acc, curr) => acc + curr.total, 0);
+  const pendapatanQRIS = history.filter(h => h.method === 'QRIS').reduce((acc, curr) => acc + curr.total, 0);
+  const totalKasLaci = MODAL_AWAL + pendapatanTunai;
 
-  // 4. Pisahkan Pendapatan Tunai & QRIS
-  const pendapatanTunai = history
-    .filter(h => h.method === 'Tunai')
-    .reduce((acc, curr) => acc + curr.total, 0);
+  const handleTutupShift = () => {
+    if (history.length === 0) return alert("Belum ada transaksi hari ini.");
 
-  const pendapatanQRIS = history
-    .filter(h => h.method === 'QRIS')
-    .reduce((acc, curr) => acc + curr.total, 0);
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "LAPORAN REKAPITULASI SHIFT KASIR MOKAPRO\n";
+    csvContent += `Tanggal Cetak:,${new Date().toLocaleString('id-ID')}\n`;
+    csvContent += `Kasir:,${currentUser.name}\n\n`;
+    csvContent += "RINGKASAN SHIFT\n";
+    csvContent += `Total Penjualan,Rp ${totalPenjualan}\n`;
+    csvContent += `Total Transaksi,${totalTransaksi}\n`;
+    csvContent += `Modal Kas Awal,Rp ${MODAL_AWAL}\n`;
+    csvContent += `Tunai Masuk,Rp ${pendapatanTunai}\n`;
+    csvContent += `QRIS Masuk,Rp ${pendapatanQRIS}\n`;
+    csvContent += `Total Kas di Laci,Rp ${totalKasLaci}\n\n`;
+    csvContent += "DETAIL TRANSAKSI\nID Transaksi,Waktu,Tipe,Meja,Metode,Total\n";
+    history.forEach(trx => {
+      csvContent += `${trx.id},"${trx.date}",${trx.type},${trx.table},${trx.method},${trx.total}\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Rekap_Shift_${currentUser.name.replace(/\s+/g, '_')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="shift-page">
-      <DashboardNavbar role="cashier" userName="Kasir 01" userRoleLabel="Kasir" />
+      <DashboardNavbar role="cashier" />
       <main className="shift-main">
         <h1 className="page-title">Rekapitulasi Shift Kasir</h1>
 
-        {/* 4 Kartu Statistik Utama */}
         <div className="stats-grid">
           <div className="stat-card">
             <p>Penjualan Hari Ini</p>
@@ -80,30 +96,28 @@ export default function Shift() {
           </div>
         </div>
 
-        {/* Area Grafik & Rekap Kas */}
         <div className="shift-content">
           <div className="chart-area">
             <h3>Grafik Tren Penjualan Harian (Jam Sibuk)</h3>
-            <div className="chart-placeholder">
-              [Area Grafik Penjualan - Bisa diintegrasikan library Chart.js nanti]
+            {/* Menggunakan Komponen Grafik */}
+            <div className="chart-box">
+              <SalesChart history={history} />
             </div>
           </div>
           
           <div className="summary-area">
             <h3>Rekapitulasi Shift Kasir</h3>
             <ul className="summary-list">
-              <li><span>Kasir Bertugas</span> <strong>Kasir 01</strong></li>
-              <li><span>Modal Kas Awal</span> <strong>Rp 500.000</strong></li>
+              <li><span>Kasir Bertugas</span> <strong>{currentUser.name}</strong></li>
+              <li><span>Modal Kas Awal</span> <strong>Rp {MODAL_AWAL.toLocaleString('id-ID')}</strong></li>
               <li><span>Tunai Masuk</span> <strong className="text-green">Rp {pendapatanTunai.toLocaleString('id-ID')}</strong></li>
               <li><span>QRIS / Non-Tunai</span> <strong className="text-blue">Rp {pendapatanQRIS.toLocaleString('id-ID')}</strong></li>
-              <li className="total-kas-row" style={{ borderBottom: 'none', paddingBottom: 0, marginTop: '10px' }}>
-                <span style={{ fontWeight: 'bold', color: '#261a15' }}>Total Kas di Laci</span> 
-                <strong style={{ fontSize: '16px', color: '#261a15' }}>
-                  Rp {(pendapatanTunai + 500000).toLocaleString('id-ID')}
-                </strong>
+              <li className="total-kas-row">
+                <span>Total Kas di Laci</span> 
+                <strong>Rp {totalKasLaci.toLocaleString('id-ID')}</strong>
               </li>
             </ul>
-            <button className="btn-close-shift" onClick={() => alert('Shift berhasil ditutup. Rekap telah dicetak!')}>
+            <button className="btn-close-shift" onClick={handleTutupShift}>
               Tutup Shift & Cetak Rekap
             </button>
           </div>

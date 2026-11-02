@@ -15,33 +15,36 @@ import Shift from './pages/Shift/Shift';
 import Inventory from './pages/Admin/Inventory';
 import Menu from './pages/Admin/Menu';
 import Reports from './pages/Admin/Reports';
+import HistoryAdmin from './pages/Admin/HistoryAdmin'; // Riwayat Khusus Admin
+import ManageAccounts from './pages/Admin/ManageAccounts'; // Kelola Akun
 
 export default function App() {
   return (
     <Routes>
-      {/* 1. RUTE AWAL (INI YANG TADI HILANG) */}
+      {/* RUTE AWAL & AUTENTIKASI */}
       <Route path="/" element={<Welcome />} />
       <Route path="/select-user" element={<SelectUser />} />
       
-      {/* 2. RUTE PIN */}
+      {/* RUTE PIN (Jika masih ingin menggunakan halaman PIN lama) */}
       <Route path="/cashier/pin" element={<CashierPin />} />
       <Route path="/barista/pin" element={<BaristaPin />} />
       <Route path="/admin/pin" element={<AdminPin />} />
 
-      {/* 3. RUTE KASIR */}
+      {/* RUTE KASIR */}
       <Route path="/cashier" element={<Cashier />} />
       <Route path="/history" element={<History />} />
       <Route path="/cashier/shift" element={<Shift />} />
 
-      {/* 4. RUTE BARISTA */}
+      {/* RUTE BARISTA (KDS) */}
       <Route path="/kds" element={<KDS />} />
 
-      {/* 5. RUTE ADMIN */}
+      {/* RUTE ADMIN / PENGELOLA */}
       <Route path="/admin" element={<Admin />} />
       <Route path="/admin/inventory" element={<Inventory />} />
-
       <Route path="/admin/menu" element={<Menu />} />
       <Route path="/admin/reports" element={<Reports />} />
+      <Route path="/admin/history" element={<HistoryAdmin />} />
+      <Route path="/admin/accounts" element={<ManageAccounts />} />
     </Routes>
   );
 }

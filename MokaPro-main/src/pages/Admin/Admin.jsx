@@ -67,7 +67,7 @@ export default function Admin() {
             <h3>Laporan & Shift</h3>
             <span>Buka modul →</span>
           </Link>
-          <Link to="/history" className="module-card">
+          <Link to="/admin/history" className="module-card">
             <div className="icon">🧾</div>
             <h3>Riwayat Transaksi</h3>
             <span>Buka modul →</span>
@@ -75,6 +75,13 @@ export default function Admin() {
           <Link to="/admin/menu" className="module-card">
             <div className="icon">⚙️</div>
             <h3>Menu & Resep</h3>
+            <span>Buka modul →</span>
+          </Link>
+          
+          {/* Kartu Baru untuk Kelola Akun */}
+          <Link to="/admin/accounts" className="module-card">
+            <div className="icon">👥</div>
+            <h3>Kelola Akun</h3>
             <span>Buka modul →</span>
           </Link>
         </div>

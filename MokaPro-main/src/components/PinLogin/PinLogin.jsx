@@ -6,15 +6,6 @@ import './PinLogin.css';
 /**
  * Reusable PinLogin component
  * Digunakan untuk halaman PIN Kasir, Barista, dan Admin
- *
- * @param {Object} props
- * @param {string} props.roleName - e.g. "Kasir 01"
- * @param {string} props.roleSubtitle - e.g. "Kasir · Cabang Utama Toko"
- * @param {string} props.roleLabel - e.g. "Kasir"
- * @param {string} props.roleIcon - image source for role icon badge
- * @param {string} props.roleIconAlt - alt text for role icon
- * @param {string} props.expectedPin - e.g. "1234"
- * @param {string} props.destination - e.g. "/cashier"
  */
 export default function PinLogin({
   roleName = 'Kasir 01',
@@ -31,26 +22,26 @@ export default function PinLogin({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
     if (!pin.trim()) {
       setErrorMessage('Silakan masukkan PIN');
       return;
     }
 
-    // Simulasi frontend autentikasi: menerima expectedPin atau PIN 4 digit apapun untuk kemudahan testing
-    if (pin === expectedPin || pin.length >= 4) {
+    // LOGIKA BARU: Hanya menerima PIN yang persis sama
+    if (pin === expectedPin) {
       setErrorMessage('');
       navigate(destination);
     } else {
-      setErrorMessage(`PIN tidak sesuai. Gunakan PIN: ${expectedPin}`);
+      // Pesan error tidak lagi membocorkan PIN yang benar
+      setErrorMessage('PIN salah! Silakan coba lagi.');
     }
   };
 
   return (
     <div className="pin-login-page">
-      {/* Public Navbar Reusable Component */}
       <PublicNavbar />
 
-      {/* Main PIN Area */}
       <main className="pin-login-main">
         <div className="pin-card">
           {/* Back Action */}
@@ -138,14 +129,13 @@ export default function PinLogin({
             </button>
           </form>
 
-          {/* Helper Note */}
+          {/* Helper Note (Saya hapus teks PIN-nya agar lebih aman) */}
           <p className="pin-helper-note">
-            PIN untuk {roleLabel}: <strong>{expectedPin}</strong>
+            Pastikan Anda tidak membagikan PIN Anda kepada siapapun.
           </p>
         </div>
       </main>
 
-      {/* Footer Bar */}
       <footer className="pin-login-footer">
         <div className="pin-login-footer-container">
           <p className="pin-login-footer-copy">

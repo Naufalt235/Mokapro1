@@ -7,10 +7,22 @@
 .stat-card h2 { margin: 0 0 8px 0; font-size: 20px; color: #261a15; }
 .text-green { color: #10b981; font-size: 12px; font-weight: 600; }
 .text-blue { color: #3b82f6; font-size: 12px; font-weight: 600; }
+
 .report-content { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
 .chart-area, .summary-area { background: white; border: 1px solid #ede5dc; border-radius: 12px; padding: 24px; }
 .chart-area h3, .summary-area h3 { margin: 0 0 20px 0; font-size: 16px; color: #261a15; }
-.chart-placeholder { height: 250px; background: #faf7f2; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #a39a93; }
+
+/* Styling untuk Area Grafik SVG */
+.chart-box { 
+  height: 250px; 
+  width: 100%; 
+  background: #faf7f2; 
+  border-radius: 8px; 
+  overflow: hidden;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
 .summary-list { list-style: none; padding: 0; margin: 0 0 24px 0; }
 .summary-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2ece6; font-size: 14px; }
 .summary-list li span { color: #7a6d64; }

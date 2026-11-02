@@ -1,0 +1,21 @@
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sales-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.chart-empty {
+  position: absolute;
+  color: #a39a93;
+  font-size: 13px;
+  font-weight: 500;
+}

@@ -6,7 +6,7 @@ import App from './App.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter basename="/mokapro2">
+    <BrowserRouter basename="/Mokapro1">
       <App />
     </BrowserRouter>
   </StrictMode>,
