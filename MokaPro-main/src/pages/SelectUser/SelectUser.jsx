@@ -3,23 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/PublicNavbar/PublicNavbar';
 import './SelectUser.css';
 
-// 1. IMPORT GAMBAR YANG BENAR (Mencegah Error 404)
+// IMPORT GAMBAR
 const roleCashierIcon = new URL('../../assets/role-cashier.png', import.meta.url).href;
 const roleBaristaIcon = new URL('../../assets/role-barista.png', import.meta.url).href;
 const roleAdminIcon = new URL('../../assets/role-admin.png', import.meta.url).href;
 
-// 2. 3 KARTU UTAMA
+// KARTU UTAMA
 const MAIN_ROLES = [
   { id: 'cashier', name: 'Kasir', roleTitle: 'Kasir', icon: roleCashierIcon, destination: '/cashier' },
   { id: 'barista', name: 'Barista', roleTitle: 'Barista / Dapur', icon: roleBaristaIcon, destination: '/kds' },
   { id: 'admin', name: 'Pengelola', roleTitle: 'Admin / Pengelola', icon: roleAdminIcon, destination: '/admin' }
 ];
 
+// === 3 AKUN UTAMA YANG DIKUNCI DI KODE ===
+const CORE_ACCOUNTS = [
+  { id: 'core-1', roleId: 'cashier', name: 'Kasir 01', roleTitle: 'Kasir', username: 'kasir01', password: 'kasir123' },
+  { id: 'core-2', roleId: 'barista', name: 'Barista 01', roleTitle: 'Barista / Dapur', username: 'barista01', password: 'barista123' },
+  { id: 'core-3', roleId: 'admin', name: 'Pengelola 01', roleTitle: 'Admin / Pengelola', username: 'admin01', password: 'admin123' }
+];
+
 export default function SelectUser() {
   const navigate = useNavigate();
-  
-  // State untuk Modal Login
-  const [selectedRole, setSelectedRole] = useState(null); 
+  const [selectedRole, setSelectedRole] = useState(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -34,17 +39,24 @@ export default function SelectUser() {
   const handleLogin = (e) => {
     e.preventDefault();
     
-    // Ambil semua akun dari localStorage
-    const savedAccounts = JSON.parse(localStorage.getItem('mokapro_accounts')) || [];
+    const cleanUsername = username.trim();
+    const cleanPassword = password.trim();
+
+    // 1. Ambil akun tambahan dari localStorage (jika ada)
+    const extraAccounts = JSON.parse(localStorage.getItem('mokapro_extra_accounts')) || [];
     
-    // Cari akun yang cocok
-    const matchedAccount = savedAccounts.find(acc => 
+    // 2. Gabungkan Akun Utama + Akun Tambahan
+    const allAccounts = [...CORE_ACCOUNTS, ...extraAccounts];
+
+    // 3. Cari akun yang cocok
+    const matchedAccount = allAccounts.find(acc => 
       acc.roleId === selectedRole.id && 
-      acc.username === username && 
-      acc.password === password
+      acc.username === cleanUsername && 
+      acc.password === cleanPassword
     );
 
     if (matchedAccount) {
+      // Simpan user yang aktif untuk ditampilkan di Navbar
       localStorage.setItem('mokapro_current_user', JSON.stringify(matchedAccount));
       navigate(selectedRole.destination);
     } else {
@@ -55,7 +67,6 @@ export default function SelectUser() {
   return (
     <div className="select-user-page">
       <PublicNavbar />
-
       <main className="select-user-main">
         <div className="select-user-container">
           <div className="select-user-top-actions">
@@ -66,14 +77,12 @@ export default function SelectUser() {
               <span>Kembali</span>
             </button>
           </div>
-
           <section className="select-user-header">
             <span className="select-user-eyebrow">AKSES OPERASIONAL</span>
             <h1 className="select-user-title">Pilih akun karyawan</h1>
             <p className="select-user-subtitle">Pilih peran Anda, lalu masukkan Username dan Password.</p>
           </section>
-
-          <section className="select-user-grid" aria-label="Daftar peran karyawan">
+          <section className="select-user-grid">
             {MAIN_ROLES.map((role) => (
               <div key={role.id} className="role-card" onClick={() => handleCardClick(role)}>
                 <div className="role-card-icon-wrap">
@@ -96,13 +105,11 @@ export default function SelectUser() {
         </div>
       </main>
 
-      {/* MODAL LOGIN */}
       {selectedRole && (
         <div className="login-modal-overlay" onClick={() => setSelectedRole(null)}>
           <div className="login-modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Login {selectedRole.name}</h2>
             <p className="modal-subtitle">Masukkan akun {selectedRole.roleTitle} Anda</p>
-            
             <form onSubmit={handleLogin}>
               <div className="form-group">
                 <label>Username</label>
@@ -113,7 +120,6 @@ export default function SelectUser() {
                 <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Masukkan password" className="modal-input" />
               </div>
               {error && <p className="modal-error">{error}</p>}
-              
               <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={() => setSelectedRole(null)}>Batal</button>
                 <button type="submit" className="btn-login">Masuk</button>

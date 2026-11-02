@@ -2,91 +2,70 @@ import { useState, useEffect } from 'react';
 import DashboardNavbar from '../../components/DashboardNavbar/DashboardNavbar';
 import './ManageAccounts.css';
 
-// Gambar untuk icon (sesuaikan path-nya dengan struktur folder Anda)
-import cashierIcon from '../../assets/role-cashier.png';
-import baristaIcon from '../../assets/role-barista.png';
-import adminIcon from '../../assets/role-admin.png';
+// === DAFTAR 3 AKUN UTAMA (Hanya untuk ditampilkan, tidak bisa dihapus) ===
+const CORE_ACCOUNTS = [
+  { id: 'core-1', name: 'Kasir 01', roleTitle: 'Kasir', username: 'kasir01', password: 'kasir123', isCore: true },
+  { id: 'core-2', name: 'Barista 01', roleTitle: 'Barista / Dapur', username: 'barista01', password: 'barista123', isCore: true },
+  { id: 'core-3', name: 'Pengelola 01', roleTitle: 'Admin / Pengelola', username: 'admin01', password: 'admin123', isCore: true }
+];
 
 export default function ManageAccounts() {
-  const [accounts, setAccounts] = useState([]);
+  const [extraAccounts, setExtraAccounts] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  
-  // State Form
   const [formData, setFormData] = useState({ name: '', roleId: 'cashier', username: '', password: '' });
 
+  // Ambil hanya akun tambahan dari localStorage
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('mokapro_accounts')) || [];
-    setAccounts(saved);
+    const saved = JSON.parse(localStorage.getItem('mokapro_extra_accounts')) || [];
+    setExtraAccounts(saved);
   }, []);
 
   const saveToLocalStorage = (newAccounts) => {
-    setAccounts(newAccounts);
-    localStorage.setItem('mokapro_accounts', JSON.stringify(newAccounts));
-  };
-
-  const handleOpenModal = (account = null) => {
-    if (account) {
-      setEditingId(account.id);
-      setFormData({ name: account.name, roleId: account.roleId, username: account.username, password: account.password });
-    } else {
-      setEditingId(null);
-      setFormData({ name: '', roleId: 'cashier', username: '', password: '' });
-    }
-    setShowModal(true);
+    setExtraAccounts(newAccounts);
+    localStorage.setItem('mokapro_extra_accounts', JSON.stringify(newAccounts));
   };
 
   const handleSave = (e) => {
     e.preventDefault();
     
-    // Tentukan Icon & Role Title & Destination berdasarkan roleId
-    let icon = cashierIcon;
     let roleTitle = 'Kasir';
-    let destination = '/cashier';
-    
-    if (formData.roleId === 'barista') { icon = baristaIcon; roleTitle = 'Barista / Dapur'; destination = '/kds'; }
-    if (formData.roleId === 'admin') { icon = adminIcon; roleTitle = 'Admin / Pengelola'; destination = '/admin'; }
+    if (formData.roleId === 'barista') roleTitle = 'Barista / Dapur';
+    if (formData.roleId === 'admin') roleTitle = 'Admin / Pengelola';
 
-    const newAccountData = {
+    const newAccount = {
+      id: `extra-${Date.now()}`,
       ...formData,
       roleTitle,
-      icon,
-      destination
+      isCore: false
     };
 
-    if (editingId) {
-      // Edit Mode
-      const updated = accounts.map(acc => acc.id === editingId ? { ...acc, ...newAccountData } : acc);
-      saveToLocalStorage(updated);
-      alert('Akun berhasil diperbarui!');
-    } else {
-      // Tambah Baru
-      const newId = accounts.length > 0 ? Math.max(...accounts.map(a => a.id)) + 1 : 1;
-      const newAccount = { id: newId, ...newAccountData };
-      saveToLocalStorage([...accounts, newAccount]);
-      alert('Akun baru berhasil ditambahkan!');
-    }
+    saveToLocalStorage([...extraAccounts, newAccount]);
+    alert('Akun baru berhasil ditambahkan!');
     setShowModal(false);
+    setFormData({ name: '', roleId: 'cashier', username: '', password: '' });
   };
 
   const handleDelete = (id) => {
     if (window.confirm('Yakin ingin menghapus akun ini?')) {
-      const filtered = accounts.filter(acc => acc.id !== id);
+      const filtered = extraAccounts.filter(acc => acc.id !== id);
       saveToLocalStorage(filtered);
     }
   };
 
+  // Gabungkan Akun Utama & Akun Tambahan untuk ditampilkan di tabel
+  const allAccountsToDisplay = [...CORE_ACCOUNTS, ...extraAccounts];
+
   return (
     <div className="manage-accounts-page">
-      <DashboardNavbar role="admin" userName="Pengelola 01" userRoleLabel="Admin" />
+      <DashboardNavbar role="admin" />
       
       <main className="manage-accounts-main">
         <div className="page-header">
           <div>
             <h1 className="page-title">Kelola Akun Karyawan</h1>
-            <p className="page-subtitle">Tambahkan, ubah, atau hapus akses login karyawan.</p>
+            <p className="page-subtitle">Akun utama tidak dapat dihapus. Anda dapat menambah atau menghapus akun tambahan.</p>
           </div>
-          <button className="btn-add-account" onClick={() => handleOpenModal()}>+ Tambah Akun</button>
+          <button className="btn-add-account" onClick={() => setShowModal(true)}>+ Tambah Akun Baru</button>
         </div>
 
         <div className="table-card">
@@ -101,36 +80,35 @@ export default function ManageAccounts() {
               </tr>
             </thead>
             <tbody>
-              {accounts.length === 0 ? (
-                <tr><td colSpan="5" style={{textAlign: 'center'}}>Belum ada akun terdaftar.</td></tr>
-              ) : (
-                accounts.map((acc) => (
-                  <tr key={acc.id}>
-                    <td><strong>{acc.name}</strong></td>
-                    <td>{acc.roleTitle}</td>
-                    <td>{acc.username}</td>
-                    <td>
-                      <span className="password-dots">••••••••</span>
-                    </td>
-                    <td>
-                      <div className="action-buttons">
-                        <button className="btn-edit" onClick={() => handleOpenModal(acc)}>Edit</button>
-                        <button className="btn-delete" onClick={() => handleDelete(acc.id)}>Hapus</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
+              {allAccountsToDisplay.map((acc) => (
+                <tr key={acc.id} style={{ backgroundColor: acc.isCore ? '#f9fafb' : 'transparent' }}>
+                  <td>
+                    <strong>{acc.name}</strong> 
+                    {acc.isCore && <span style={{fontSize: '10px', color: '#10b981', marginLeft: '8px', fontWeight: 'bold'}}>(UTAMA)</span>}
+                  </td>
+                  <td>{acc.roleTitle}</td>
+                  <td>{acc.username}</td>
+                  <td>
+                    <span className="password-dots">••••••••</span>
+                  </td>
+                  <td>
+                    {acc.isCore ? (
+                      <span style={{ fontSize: '12px', color: '#9ca3af', fontStyle: 'italic' }}>Dikunci</span>
+                    ) : (
+                      <button className="btn-delete" onClick={() => handleDelete(acc.id)}>Hapus</button>
+                    )}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
       </main>
 
-      {/* MODAL TAMBAH/EDIT AKUN */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>{editingId ? 'Edit Akun' : 'Tambah Akun Baru'}</h2>
+            <h2>Tambah Akun Baru</h2>
             <form onSubmit={handleSave}>
               <div className="form-group">
                 <label>Nama Karyawan</label>
@@ -152,7 +130,6 @@ export default function ManageAccounts() {
                 <label>Password</label>
                 <input type="text" required value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="form-input" placeholder="Password untuk login" />
               </div>
-              
               <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>Batal</button>
                 <button type="submit" className="btn-save">Simpan Akun</button>
